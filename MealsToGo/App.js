@@ -1,6 +1,5 @@
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
-import React from "react";
-import { StatusBar, StyleSheet, Text } from "react-native";
+import React, { useState, useEffect } from "react";
 import { ThemeProvider } from "styled-components";
 import { theme } from "./src/infrastructure/theme";
 
@@ -10,41 +9,33 @@ import {
 } from "@expo-google-fonts/oswald";
 
 import { useFonts as useLato, Lato_400Regular } from "@expo-google-fonts/lato";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { SafeArea } from "./src/components/utility/safe-area.component";
-import { Ionicons } from "@expo/vector-icons";
 import { RestaurantsContextProvider } from "./src/services/restaurants/restaurants.context";
 import { LocationContextProvider } from "./src/services/location/location.context";
+import { FavouritesContextProvider } from "./src/services/favourites/favourites.context";
 import { Navigation } from "./src/infrastructure/navigation";
 
-const Tab = createBottomTabNavigator();
+import * as firebase from "firebase";
+import { AuthenticationContextProvider } from "./src/services/authentication/authentication.context";
 
-const Settings = () => (
-  <SafeArea>
-    <Text>Settings</Text>
-  </SafeArea>
-);
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 
-const Map = () => (
-  <SafeArea>
-    <Text>Map</Text>
-  </SafeArea>
-);
-
-const TAB_ICON = {
-  Restaurants: "md-restaurant",
-  Map: "md-map",
-  Settings: "md-settings",
+const firebaseConfig = {
+  apiKey: "AIzaSyC0N4nVmqhSztfXSU4n1AwvyBf4FY9POnE",
+  authDomain: "mealtogo-c5826.firebaseapp.com",
+  projectId: "mealtogo-c5826",
+  storageBucket: "mealtogo-c5826.appspot.com",
+  messagingSenderId: "1011233644614",
+  appId: "1:1011233644614:web:4a535d0d2d1c1e2f18aa47",
+  measurementId: "G-6JXZFDDF6F",
 };
 
-const createScreenOptions = ({ route }) => {
-  const iconName = TAB_ICON[route.name];
-  return {
-    tabBarIcon: ({ size, color }) => (
-      <Ionicons name={iconName} size={size} color={color} />
-    ),
-  };
-};
+// Initialize Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+} else {
+  firebase.app(); // if already initialized, use that one
+}
 
 export default function App() {
   const [oswaldLoaded] = useOswald({
@@ -58,14 +49,19 @@ export default function App() {
   if (!oswaldLoaded || !latoLoaded) {
     return null;
   }
+
   return (
     <>
       <ThemeProvider theme={theme}>
-        <LocationContextProvider>
-          <RestaurantsContextProvider>
-            <Navigation />
-          </RestaurantsContextProvider>
-        </LocationContextProvider>
+        <AuthenticationContextProvider>
+          <FavouritesContextProvider>
+            <LocationContextProvider>
+              <RestaurantsContextProvider>
+                <Navigation />
+              </RestaurantsContextProvider>
+            </LocationContextProvider>
+          </FavouritesContextProvider>
+        </AuthenticationContextProvider>
       </ThemeProvider>
       <ExpoStatusBar style="auto" />
     </>
